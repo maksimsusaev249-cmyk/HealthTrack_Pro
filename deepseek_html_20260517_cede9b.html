@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>HealthTrack Pro — с камерой-весами</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f4f7fc;
+            color: #1a2c3e;
+            padding: 20px 16px;
+            line-height: 1.4;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.03), 0 2px 6px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1E6F5C, #289672);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.25rem;
+        }
+
+        h2 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1e3b4a;
+            border-left: 5px solid #289672;
+            padding-left: 14px;
+        }
+
+        h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 1rem 0 0.6rem;
+            color: #2c5a6e;
+        }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .input-group {
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #4b6f86;
+            margin-bottom: 4px;
+        }
+
+        input, button {
+            border-radius: 48px;
+            border: 1px solid #dce9f0;
+            padding: 12px 16px;
+            font-size: 1rem;
+            font-family: inherit;
+            background: white;
+            width: 100%;
+        }
+
+        button {
+            background: #1e6f5c;
+            color: white;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        button:active { transform: scale(0.97); }
+        button.secondary {
+            background: #eef2f5;
+            color: #1e6f5c;
+            border: 1px solid #cbdde6;
+        }
+        button.danger {
+            background: #fef3f2;
+            color: #bc5a4c;
+            border: 1px solid #f3cfc9;
+        }
+
+        .bluetooth-status {
+            background: #ecf7f2;
+            border-radius: 40px;
+            padding: 8px 14px;
+            font-size: 0.8rem;
+            margin-top: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 10px 6px;
+            border-bottom: 1px solid #e2edf2;
+        }
+
+        th {
+            background: #f0f6fa;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .action-btns button {
+            padding: 5px 10px;
+            font-size: 0.7rem;
+        }
+
+        .camera-section {
+            background: #f1f5f9;
+            border-radius: 24px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        video, .photo-preview {
+            width: 100%;
+            border-radius: 24px;
+            background: #000;
+            margin-bottom: 12px;
+            max-height: 280px;
+            object-fit: cover;
+        }
+        .flex-btns {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .badge {
+            background: #e1f0ea;
+            border-radius: 40px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+        }
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #6c8d9e;
+            margin-top: 1.5rem;
+        }
+        hr { margin: 1rem 0; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🏃‍♂️ HealthTrack Pro</h1>
+    <p style="margin-bottom: 1rem;">Активность + Bluetooth + Камера‑весы</p>
+
+    <!-- Основная форма -->
+    <div class="card">
+        <h2>📝 Запись показателей</h2>
+        <div class="form-row">
+            <div class="input-group"><label>📅 Дата</label><input type="date" id="recordDate"></div>
+            <div class="input-group"><label>👣 Шаги</label><input type="number" id="steps" value="0"></div>
+            <div class="input-group"><label>🔥 Калории</label><input type="number" id="calories" value="0"></div>
+            <div class="input-group"><label>😴 Сон (ч)</label><input type="number" id="sleep" step="0.5" value="7"></div>
+            <div class="input-group"><label>❤️ Пульс</label><input type="number" id="heartRate" value="72"></div>
+        </div>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <button id="addUpdateBtn">➕ Добавить / Обновить</button>
+            <button id="clearFormBtn" class="secondary">🔄 Очистить</button>
+        </div>
+    </div>
+
+    <!-- Камера-весы (мобильный блок) -->
+    <div class="card">
+        <h2>📸 Камера‑весы (добавить калории по фото)</h2>
+        <div class="camera-section">
+            <video id="video" autoplay playsinline style="display: none;"></video>
+            <canvas id="canvas" style="display: none;"></canvas>
+            <img id="photoPreview" class="photo-preview" style="display: none;" alt="Снимок еды">
+            <div class="flex-btns">
+                <button id="openCameraBtn">📷 Открыть камеру</button>
+                <button id="captureBtn" disabled>📸 Сделать снимок</button>
+                <button id="closeCameraBtn" class="secondary" disabled>❌ Закрыть камеру</button>
+            </div>
+            <div id="foodForm" style="display: none; margin-top: 15px;">
+                <input type="text" id="foodName" placeholder="Название блюда (необязательно)">
+                <input type="number" id="foodCalories" placeholder="Калории (ккал)" value="0" step="10" style="margin-top: 8px;">
+                <button id="saveFoodCaloriesBtn" style="margin-top: 8px;">➕ Добавить калории в историю</button>
+            </div>
+        </div>
+        <p class="badge" style="margin-top: 8px;">💡 Сфотографируйте еду → введите калории → они прибавятся к выбранной дате</p>
+    </div>
+
+    <!-- Bluetooth -->
+    <div class="card">
+        <h2>🔗 Bluetooth фитнес-браслет</h2>
+        <button id="connectBleBtn">📡 Подключить</button>
+        <div id="bleStatus" class="bluetooth-status">⚡ Статус: не подключено</div>
+        <button id="saveHrFromBraceletBtn" class="secondary" disabled>💓 Взять пульс в текущую дату</button>
+        <span id="liveHrValue" class="badge">—</span>
+    </div>
+
+    <!-- График и история -->
+    <div class="card">
+        <h2>📊 Прогресс (шаги за 7 дней)</h2>
+        <canvas id="stepsChart" width="400" height="200" style="max-width:100%; height:auto;"></canvas>
+    </div>
+
+    <div class="card">
+        <h2>📜 История здоровья</h2>
+        <div style="overflow-x: auto;">
+            <table id="historyTable">
+                <thead><tr><th>Дата</th><th>Шаги</th><th>Калории</th><th>Сон</th><th>Пульс</th><th>Действия</th></tr></thead>
+                <tbody id="tableBody"><tr><td colspan="6">Загрузка...</td></tr></tbody>
+            </table>
+        </div>
+        <div style="margin-top: 1rem; display: flex; gap: 10px; flex-wrap: wrap;">
+            <button id="exportCsvBtn" class="secondary">📎 Экспорт CSV</button>
+            <button id="clearAllBtn" class="danger">🗑️ Очистить всё</button>
+        </div>
+    </div>
+    <footer>📱 Камера работает на мобильных устройствах. Данные в localStorage.</footer>
+</div>
+
+<script>
+    // ---------- Глобальные переменные ----------
+    let healthRecords = [];
+    let stepsChart = null;
+    let bluetoothDevice = null;
+    let heartRateCharacteristic = null;
+    let currentHeartRate = null;
+    let isBleConnected = false;
+
+    // Камера
+    let stream = null;
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const photoPreview = document.getElementById('photoPreview');
+    const openCameraBtn = document.getElementById('openCameraBtn');
+    const captureBtn = document.getElementById('captureBtn');
+    const closeCameraBtn = document.getElementById('closeCameraBtn');
+    const foodFormDiv = document.getElementById('foodForm');
+    const foodNameInput = document.getElementById('foodName');
+    const foodCaloriesInput = document.getElementById('foodCalories');
+    const saveFoodCaloriesBtn = document.getElementById('saveFoodCaloriesBtn');
+
+    // DOM элементы
+    const dateInput = document.getElementById('recordDate');
+    const stepsInput = document.getElementById('steps');
+    const caloriesInput = document.getElementById('calories');
+    const sleepInput = document.getElementById('sleep');
+    const heartRateInput = document.getElementById('heartRate');
+    const addUpdateBtn = document.getElementById('addUpdateBtn');
+    const clearFormBtn = document.getElementById('clearFormBtn');
+    const tableBody = document.getElementById('tableBody');
+    const connectBleBtn = document.getElementById('connectBleBtn');
+    const bleStatusDiv = document.getElementById('bleStatus');
+    const saveHrFromBraceletBtn = document.getElementById('saveHrFromBraceletBtn');
+    const liveHrSpan = document.getElementById('liveHrValue');
+    const exportCsvBtn = document.getElementById('exportCsvBtn');
+    const clearAllBtn = document.getElementById('clearAllBtn');
+
+    // ---------- Инициализация даты ----------
+    function setDefaultDate() {
+        if (!dateInput.value) dateInput.value = new Date().toISOString().slice(0,10);
+    }
+    setDefaultDate();
+
+    // ---------- Работа с данными (localStorage) ----------
+    function loadData() {
+        const stored = localStorage.getItem('health_tracker_data');
+        if(stored) {
+            healthRecords = JSON.parse(stored);
+        } else {
+            const today = new Date().toISOString().slice(0,10);
+            healthRecords = [
+                { date: today, steps: 8450, calories: 320, sleep: 7.2, heartRate: 68 },
+                { date: getDateOffset(-1), steps: 10200, calories: 410, sleep: 6.8, heartRate: 72 },
+            ];
+            saveData();
+        }
+        healthRecords.sort((a,b) => new Date(b.date) - new Date(a.date));
+        renderTable();
+        renderChart();
+    }
+
+    function getDateOffset(days) {
+        const d = new Date();
+        d.setDate(d.getDate() + days);
+        return d.toISOString().slice(0,10);
+    }
+
+    function saveData() {
+        localStorage.setItem('health_tracker_data', JSON.stringify(healthRecords));
+        renderTable();
+        renderChart();
+    }
+
+    function addOrUpdateRecord() {
+        const date = dateInput.value;
+        if(!date) { alert("Выберите дату"); return; }
+        const steps = parseInt(stepsInput.value) || 0;
+        const calories = parseInt(caloriesInput.value) || 0;
+        const sleep = parseFloat(sleepInput.value) || 0;
+        const heartRate = parseInt(heartRateInput.value) || 0;
+        const existingIndex = healthRecords.findIndex(r => r.date === date);
+        const newRecord = { date, steps, calories, sleep, heartRate };
+        if(existingIndex !== -1) healthRecords[existingIndex] = newRecord;
+        else healthRecords.push(newRecord);
+        healthRecords.sort((a,b) => new Date(b.date) - new Date(a.date));
+        saveData();
+        stepsInput.value = 0; caloriesInput.value = 0; sleepInput.value = 7; heartRateInput.value = 72;
+    }
+
+    function deleteRecord(date) {
+        if(confirm(`Удалить запись за ${date}?`)) {
+            healthRecords = healthRecords.filter(r => r.date !== date);
+            saveData();
+        }
+    }
+
+    function editRecord(date) {
+        const rec = healthRecords.find(r => r.date === date);
+        if(rec) {
+            dateInput.value = rec.date;
+            stepsInput.value = rec.steps;
+            caloriesInput.value = rec.calories;
+            sleepInput.value = rec.sleep;
+            heartRateInput.value = rec.heartRate;
+        }
+    }
+
+    function renderTable() {
+        if(!tableBody) return;
+        if(healthRecords.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="6">Нет данных. Добавьте первую запись!</td></tr>';
+            return;
+        }
+        let html = '';
+        for(let rec of healthRecords) {
+            html += `<tr>
+                        <td>${rec.date}</td>
+                        <td>${rec.steps}</td>
+                        <td>${rec.calories}</td>
+                        <td>${rec.sleep}</td>
+                        <td>${rec.heartRate}</td>
+                        <td class="action-btns">
+                            <button class="secondary" onclick='editRecord("${rec.date}")'>✏️</button>
+                            <button class="danger" onclick='deleteRecord("${rec.date}")'>🗑️</button>
+                        </td>
+                     </tr>`;
+        }
+        tableBody.innerHTML = html;
+    }
+
+    function renderChart() {
+        const ctx = document.getElementById('stepsChart').getContext('2d');
+        const last7Days = [];
+        for(let i = 6; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            last7Days.push(d.toISOString().slice(0,10));
+        }
+        const stepsData = last7Days.map(date => healthRecords.find(r => r.date === date)?.steps || 0);
+        const labels = last7Days.map(d => d.slice(5));
+        if(stepsChart) stepsChart.destroy();
+        stepsChart = new Chart(ctx, {
+            type: 'line',
+            data: { labels, datasets: [{ label: 'Шаги', data: stepsData, borderColor: '#1E6F5C', tension: 0.2, fill: true }] },
+            options: { responsive: true, maintainAspectRatio: true }
+        });
+    }
+
+    // ---------- КАМЕРА-ВЕСЫ ----------
+    async function openCamera() {
+        if(stream) {
+            stopCamera();
+        }
+        try {
+            const constraints = { video: { facingMode: "environment" } }; // задняя камера
+            stream = await navigator.mediaDevices.getUserMedia(constraints);
+            video.srcObject = stream;
+            video.style.display = "block";
+            photoPreview.style.display = "none";
+            await video.play();
+            captureBtn.disabled = false;
+            closeCameraBtn.disabled = false;
+            openCameraBtn.disabled = true;
+            foodFormDiv.style.display = "none";
+        } catch(err) {
+            alert("Не удалось получить доступ к камере: " + err.message);
+        }
+    }
+
+    function capturePhoto() {
+        if(!video.srcObject) return;
+        const context = canvas.getContext('2d');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg');
+        photoPreview.src = dataUrl;
+        photoPreview.style.display = "block";
+        video.style.display = "none";
+        stopCamera(); // останавливаем поток, чтобы не тратить батарею
+        foodFormDiv.style.display = "block";
+        captureBtn.disabled = true;
+        closeCameraBtn.disabled = true;
+        openCameraBtn.disabled = false;
+        // Очищаем поля
+        foodNameInput.value = "";
+        foodCaloriesInput.value = "";
+    }
+
+    function stopCamera() {
+        if(stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+        }
+        video.srcObject = null;
+        video.style.display = "none";
+        captureBtn.disabled = true;
+        closeCameraBtn.disabled = true;
+        openCameraBtn.disabled = false;
+    }
+
+    function closeCameraUI() {
+        stopCamera();
+        photoPreview.style.display = "none";
+        foodFormDiv.style.display = "none";
+        video.style.display = "none";
+    }
+
+    // Добавить калории через камеру (суммируем с существующей записью за выбранную дату)
+    function addCaloriesFromPhoto() {
+        const cal = parseInt(foodCaloriesInput.value);
+        if(isNaN(cal) || cal <= 0) {
+            alert("Введите корректное количество калорий (больше 0)");
+            return;
+        }
+        const targetDate = dateInput.value || new Date().toISOString().slice(0,10);
+        const existingIndex = healthRecords.findIndex(r => r.date === targetDate);
+        if(existingIndex !== -1) {
+            healthRecords[existingIndex].calories += cal;
+        } else {
+            healthRecords.push({
+                date: targetDate,
+                steps: 0,
+                calories: cal,
+                sleep: 0,
+                heartRate: 0
+            });
+        }
+        healthRecords.sort((a,b) => new Date(b.date) - new Date(a.date));
+        saveData();
+        alert(`➕ Добавлено ${cal} ккал за ${targetDate}`);
+        // обновим поле калорий в форме, если дата совпадает
+        if(dateInput.value === targetDate) {
+            const updatedRecord = healthRecords.find(r => r.date === targetDate);
+            if(updatedRecord) caloriesInput.value = updatedRecord.calories;
+        }
+        // очищаем форму фото
+        foodNameInput.value = "";
+        foodCaloriesInput.value = "";
+        photoPreview.style.display = "none";
+        foodFormDiv.style.display = "none";
+    }
+
+    // ---------- BLUETOOTH (без изменений, работает как раньше) ----------
+    async function connectBluetooth() {
+        if (!navigator.bluetooth) { alert("Web Bluetooth не поддерживается"); return; }
+        try {
+            const device = await navigator.bluetooth.requestDevice({ filters: [{ services: ['heart_rate'] }] });
+            bluetoothDevice = device;
+            const server = await device.gatt.connect();
+            const service = await server.getPrimaryService('heart_rate');
+            const characteristic = await service.getCharacteristic('heart_rate_measurement');
+            heartRateCharacteristic = characteristic;
+            await characteristic.startNotifications();
+            characteristic.addEventListener('characteristicvaluechanged', (event) => {
+                const value = event.target.value;
+                const flags = value.getUint8(0);
+                let hr = (flags & 0x01) ? value.getUint16(1, true) : value.getUint8(1);
+                currentHeartRate = hr;
+                liveHrSpan.innerText = `❤️ ${hr} уд/мин`;
+                heartRateInput.value = hr;
+            });
+            isBleConnected = true;
+            bleStatusDiv.innerHTML = `🟢 Подключено: ${device.name || "браслет"}`;
+            saveHrFromBraceletBtn.disabled = false;
+            device.addEventListener('gattserverdisconnected', () => {
+                isBleConnected = false;
+                bleStatusDiv.innerHTML = "⚡ Не подключено";
+                saveHrFromBraceletBtn.disabled = true;
+                liveHrSpan.innerText = "—";
+            });
+        } catch(e) { alert("Ошибка: "+e.message); }
+    }
+
+    function saveHeartRateFromBracelet() {
+        if(!isBleConnected || currentHeartRate === null) { alert("Нет пульса с браслета"); return; }
+        const targetDate = dateInput.value || new Date().toISOString().slice(0,10);
+        const existing = healthRecords.find(r => r.date === targetDate);
+        if(existing) { existing.heartRate = currentHeartRate; }
+        else { healthRecords.push({ date: targetDate, steps: 0, calories: 0, sleep: 0, heartRate: currentHeartRate }); }
+        healthRecords.sort((a,b)=>new Date(b.date)-new Date(a.date));
+        saveData();
+        heartRateInput.value = currentHeartRate;
+        alert(`Пульс ${currentHeartRate} сохранён за ${targetDate}`);
+    }
+
+    function exportToCSV() {
+        if(!healthRecords.length) return alert("Нет данных");
+        let csv = ["Дата,Шаги,Калории,Сон(ч),Пульс"];
+        healthRecords.forEach(r => csv.push(`${r.date},${r.steps},${r.calories},${r.sleep},${r.heartRate}`));
+        const blob = new Blob(["\uFEFF" + csv.join("\n")], {type:"text/csv"});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = "health.csv";
+        a.click();
+        URL.revokeObjectURL(a.href);
+    }
+    function clearAllHistory() { if(confirm("Удалить всё?")) { healthRecords = []; saveData(); } }
+    function clearForm() { stepsInput.value=0; caloriesInput.value=0; sleepInput.value=7; heartRateInput.value=72; setDefaultDate(); }
+
+    window.deleteRecord = deleteRecord;
+    window.editRecord = editRecord;
+
+    // События
+    addUpdateBtn.addEventListener('click', addOrUpdateRecord);
+    clearFormBtn.addEventListener('click', clearForm);
+    connectBleBtn.addEventListener('click', connectBluetooth);
+    saveHrFromBraceletBtn.addEventListener('click', saveHeartRateFromBracelet);
+    exportCsvBtn.addEventListener('click', exportToCSV);
+    clearAllBtn.addEventListener('click', clearAllHistory);
+    openCameraBtn.addEventListener('click', openCamera);
+    captureBtn.addEventListener('click', capturePhoto);
+    closeCameraBtn.addEventListener('click', closeCameraUI);
+    saveFoodCaloriesBtn.addEventListener('click', addCaloriesFromPhoto);
+
+    loadData();
+</script>
+</body>
+</html>
