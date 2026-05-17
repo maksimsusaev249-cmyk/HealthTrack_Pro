@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>HealthTrack Pro — с камерой-весами</title>
+    <title>HealthTrack Pro — Календарь с большим окном</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <style>
@@ -12,7 +12,6 @@
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             font-family: 'Inter', sans-serif;
             background: #f4f7fc;
@@ -20,12 +19,10 @@
             padding: 20px 16px;
             line-height: 1.4;
         }
-
         .container {
             max-width: 800px;
             margin: 0 auto;
         }
-
         .card {
             background: white;
             border-radius: 28px;
@@ -33,7 +30,6 @@
             padding: 1.5rem;
             margin-bottom: 1.5rem;
         }
-
         h1 {
             font-size: 1.8rem;
             font-weight: 700;
@@ -41,9 +37,7 @@
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            margin-bottom: 0.25rem;
         }
-
         h2 {
             font-size: 1.3rem;
             font-weight: 600;
@@ -52,26 +46,22 @@
             border-left: 5px solid #289672;
             padding-left: 14px;
         }
-
         h3 {
             font-size: 1rem;
             font-weight: 600;
             margin: 1rem 0 0.6rem;
             color: #2c5a6e;
         }
-
         .form-row {
             display: flex;
             flex-wrap: wrap;
             gap: 0.8rem;
             margin-bottom: 1rem;
         }
-
         .input-group {
             flex: 1;
             min-width: 100px;
         }
-
         .input-group label {
             display: block;
             font-size: 0.7rem;
@@ -80,7 +70,6 @@
             color: #4b6f86;
             margin-bottom: 4px;
         }
-
         input, button {
             border-radius: 48px;
             border: 1px solid #dce9f0;
@@ -90,7 +79,6 @@
             background: white;
             width: 100%;
         }
-
         button {
             background: #1e6f5c;
             color: white;
@@ -103,8 +91,9 @@
             gap: 8px;
             transition: 0.2s;
         }
-
-        button:active { transform: scale(0.97); }
+        button:active {
+            transform: scale(0.97);
+        }
         button.secondary {
             background: #eef2f5;
             color: #1e6f5c;
@@ -115,7 +104,6 @@
             color: #bc5a4c;
             border: 1px solid #f3cfc9;
         }
-
         .bluetooth-status {
             background: #ecf7f2;
             border-radius: 40px;
@@ -123,23 +111,19 @@
             font-size: 0.8rem;
             margin-top: 10px;
         }
-
         table {
             width: 100%;
             border-collapse: collapse;
             font-size: 0.8rem;
         }
-
         th, td {
             text-align: left;
             padding: 10px 6px;
             border-bottom: 1px solid #e2edf2;
         }
-
         th {
             background: #f0f6fa;
         }
-
         .action-btns {
             display: flex;
             gap: 6px;
@@ -149,7 +133,6 @@
             padding: 5px 10px;
             font-size: 0.7rem;
         }
-
         .camera-section {
             background: #f1f5f9;
             border-radius: 24px;
@@ -181,13 +164,174 @@
             color: #6c8d9e;
             margin-top: 1.5rem;
         }
-        hr { margin: 1rem 0; }
+        hr {
+            margin: 1rem 0;
+        }
+
+        /* ----- Календарь (без изменений) ----- */
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .month-year {
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: #1e6f5c;
+        }
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        .weekday {
+            font-weight: 600;
+            font-size: 0.75rem;
+            color: #4b6f86;
+            padding: 6px 0;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+        }
+        .calendar-day {
+            background: #f9fbfd;
+            border-radius: 40px;
+            padding: 12px 4px;
+            text-align: center;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.1s;
+            position: relative;
+            border: 1px solid #e2edf2;
+        }
+        .calendar-day.empty {
+            background: transparent;
+            border: none;
+            cursor: default;
+        }
+        .calendar-day.has-record {
+            background: #e1f7f0;
+            border-color: #289672;
+            font-weight: 600;
+        }
+        .record-dot {
+            width: 8px;
+            height: 8px;
+            background: #1e6f5c;
+            border-radius: 10px;
+            position: absolute;
+            bottom: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        @media (max-width: 500px) {
+            .calendar-day {
+                padding: 8px 2px;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* ----- БОЛЬШОЕ МОДАЛЬНОЕ ОКНО (fullscreen-адаптив) ----- */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(3px);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 16px;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 48px;
+            padding: 2rem 1.8rem;
+            width: 100%;
+            max-width: 550px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            text-align: center;
+            animation: fadeInUp 0.2s ease;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .modal-content h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #1e6f5c;
+            border-left: none;
+            padding-left: 0;
+        }
+        .modal-info {
+            background: #f0f6fa;
+            border-radius: 32px;
+            padding: 1.2rem;
+            margin: 1rem 0;
+            text-align: left;
+        }
+        .modal-info p {
+            font-size: 1.2rem;
+            margin: 0.8rem 0;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #d4e2ea;
+            padding-bottom: 6px;
+        }
+        .modal-info span:first-child {
+            font-weight: 600;
+            color: #1e3b4a;
+        }
+        .modal-info span:last-child {
+            font-weight: 700;
+            color: #289672;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .modal-buttons button {
+            flex: 1;
+            min-width: 110px;
+            padding: 14px 10px;
+            font-size: 1rem;
+        }
+        @media (max-width: 480px) {
+            .modal-content {
+                padding: 1.5rem;
+            }
+            .modal-info p {
+                font-size: 1rem;
+            }
+            .modal-buttons button {
+                min-width: 90px;
+                font-size: 0.9rem;
+            }
+        }
     </style>
 </head>
 <body>
 <div class="container">
     <h1>🏃‍♂️ HealthTrack Pro</h1>
-    <p style="margin-bottom: 1rem;">Активность + Bluetooth + Камера‑весы</p>
+    <p style="margin-bottom: 1rem;">Календарь + Bluetooth + Камера‑весы</p>
 
     <!-- Основная форма -->
     <div class="card">
@@ -205,7 +349,24 @@
         </div>
     </div>
 
-    <!-- Камера-весы (мобильный блок) -->
+    <!-- Календарь -->
+    <div class="card">
+        <h2>📅 Календарь активностей</h2>
+        <div class="calendar-header">
+            <button id="prevMonthBtn" class="secondary">◀</button>
+            <span id="monthYearDisplay" class="month-year"></span>
+            <button id="nextMonthBtn" class="secondary">▶</button>
+        </div>
+        <div class="calendar-days">
+            <div class="weekday">Пн</div><div class="weekday">Вт</div><div class="weekday">Ср</div>
+            <div class="weekday">Чт</div><div class="weekday">Пт</div><div class="weekday">Сб</div>
+            <div class="weekday">Вс</div>
+        </div>
+        <div id="calendarGrid" class="calendar-grid"></div>
+        <p class="badge" style="margin-top: 12px;">🟢 Зелёные дни — есть данные. Нажмите — откроется БОЛЬШОЕ окно с деталями.</p>
+    </div>
+
+    <!-- Камера-весы -->
     <div class="card">
         <h2>📸 Камера‑весы (добавить калории по фото)</h2>
         <div class="camera-section">
@@ -223,7 +384,6 @@
                 <button id="saveFoodCaloriesBtn" style="margin-top: 8px;">➕ Добавить калории в историю</button>
             </div>
         </div>
-        <p class="badge" style="margin-top: 8px;">💡 Сфотографируйте еду → введите калории → они прибавятся к выбранной дате</p>
     </div>
 
     <!-- Bluetooth -->
@@ -235,17 +395,18 @@
         <span id="liveHrValue" class="badge">—</span>
     </div>
 
-    <!-- График и история -->
+    <!-- График -->
     <div class="card">
         <h2>📊 Прогресс (шаги за 7 дней)</h2>
         <canvas id="stepsChart" width="400" height="200" style="max-width:100%; height:auto;"></canvas>
     </div>
 
+    <!-- Таблица истории -->
     <div class="card">
-        <h2>📜 История здоровья</h2>
+        <h2>📜 Таблица истории</h2>
         <div style="overflow-x: auto;">
             <table id="historyTable">
-                <thead><tr><th>Дата</th><th>Шаги</th><th>Калории</th><th>Сон</th><th>Пульс</th><th>Действия</th></tr></thead>
+                <thead><tr><th>Дата</th><th>Шаги</th><th>Калории</th><th>Сон</th><th>Пульс</th><th>Действия</th></thead>
                 <tbody id="tableBody"><tr><td colspan="6">Загрузка...</td></tr></tbody>
             </table>
         </div>
@@ -254,30 +415,38 @@
             <button id="clearAllBtn" class="danger">🗑️ Очистить всё</button>
         </div>
     </div>
-    <footer>📱 Камера работает на мобильных устройствах. Данные в localStorage.</footer>
+    <footer>📱 Нажмите на день в календаре → откроется БОЛЬШОЕ окно с подробностями</footer>
+</div>
+
+<!-- БОЛЬШОЕ МОДАЛЬНОЕ ОКНО -->
+<div id="detailModal" class="modal">
+    <div class="modal-content">
+        <h3 id="modalDateTitle"></h3>
+        <div class="modal-info">
+            <p><span>👣 Шаги:</span> <span id="modalSteps"></span></p>
+            <p><span>🔥 Калории:</span> <span id="modalCalories"></span> ккал</p>
+            <p><span>😴 Сон:</span> <span id="modalSleep"></span> часов</p>
+            <p><span>❤️ Пульс:</span> <span id="modalHeart"></span> уд/мин</p>
+        </div>
+        <div class="modal-buttons">
+            <button id="modalEditBtn" class="secondary">✏️ Редактировать</button>
+            <button id="modalDeleteBtn" class="danger">🗑️ Удалить</button>
+            <button id="modalCloseBtn">Закрыть</button>
+        </div>
+    </div>
 </div>
 
 <script>
     // ---------- Глобальные переменные ----------
     let healthRecords = [];
     let stepsChart = null;
-    let bluetoothDevice = null;
-    let heartRateCharacteristic = null;
-    let currentHeartRate = null;
-    let isBleConnected = false;
-
-    // Камера
+    let bluetoothDevice = null, heartRateCharacteristic = null, currentHeartRate = null, isBleConnected = false;
     let stream = null;
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const photoPreview = document.getElementById('photoPreview');
-    const openCameraBtn = document.getElementById('openCameraBtn');
-    const captureBtn = document.getElementById('captureBtn');
-    const closeCameraBtn = document.getElementById('closeCameraBtn');
-    const foodFormDiv = document.getElementById('foodForm');
-    const foodNameInput = document.getElementById('foodName');
-    const foodCaloriesInput = document.getElementById('foodCalories');
-    const saveFoodCaloriesBtn = document.getElementById('saveFoodCaloriesBtn');
+
+    // Календарь
+    let currentDate = new Date();
+    let currentYear = currentDate.getFullYear();
+    let currentMonth = currentDate.getMonth();
 
     // DOM элементы
     const dateInput = document.getElementById('recordDate');
@@ -294,19 +463,26 @@
     const liveHrSpan = document.getElementById('liveHrValue');
     const exportCsvBtn = document.getElementById('exportCsvBtn');
     const clearAllBtn = document.getElementById('clearAllBtn');
+    const calendarGrid = document.getElementById('calendarGrid');
+    const monthYearDisplay = document.getElementById('monthYearDisplay');
+    const prevMonthBtn = document.getElementById('prevMonthBtn');
+    const nextMonthBtn = document.getElementById('nextMonthBtn');
+    const modal = document.getElementById('detailModal');
+    const modalDateTitle = document.getElementById('modalDateTitle');
+    const modalStepsSpan = document.getElementById('modalSteps');
+    const modalCaloriesSpan = document.getElementById('modalCalories');
+    const modalSleepSpan = document.getElementById('modalSleep');
+    const modalHeartSpan = document.getElementById('modalHeart');
+    const modalEditBtn = document.getElementById('modalEditBtn');
+    const modalDeleteBtn = document.getElementById('modalDeleteBtn');
+    const modalCloseBtn = document.getElementById('modalCloseBtn');
+    let currentModalDate = null;
 
-    // ---------- Инициализация даты ----------
-    function setDefaultDate() {
-        if (!dateInput.value) dateInput.value = new Date().toISOString().slice(0,10);
-    }
-    setDefaultDate();
-
-    // ---------- Работа с данными (localStorage) ----------
+    // ---------- Работа с данными ----------
     function loadData() {
         const stored = localStorage.getItem('health_tracker_data');
-        if(stored) {
-            healthRecords = JSON.parse(stored);
-        } else {
+        if(stored) healthRecords = JSON.parse(stored);
+        else {
             const today = new Date().toISOString().slice(0,10);
             healthRecords = [
                 { date: today, steps: 8450, calories: 320, sleep: 7.2, heartRate: 68 },
@@ -317,20 +493,15 @@
         healthRecords.sort((a,b) => new Date(b.date) - new Date(a.date));
         renderTable();
         renderChart();
+        renderCalendar();
     }
-
-    function getDateOffset(days) {
-        const d = new Date();
-        d.setDate(d.getDate() + days);
-        return d.toISOString().slice(0,10);
-    }
-
+    function getDateOffset(days) { const d=new Date(); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); }
     function saveData() {
         localStorage.setItem('health_tracker_data', JSON.stringify(healthRecords));
         renderTable();
         renderChart();
+        renderCalendar();
     }
-
     function addOrUpdateRecord() {
         const date = dateInput.value;
         if(!date) { alert("Выберите дату"); return; }
@@ -346,14 +517,13 @@
         saveData();
         stepsInput.value = 0; caloriesInput.value = 0; sleepInput.value = 7; heartRateInput.value = 72;
     }
-
     function deleteRecord(date) {
         if(confirm(`Удалить запись за ${date}?`)) {
             healthRecords = healthRecords.filter(r => r.date !== date);
             saveData();
+            if(currentModalDate === date) closeModal();
         }
     }
-
     function editRecord(date) {
         const rec = healthRecords.find(r => r.date === date);
         if(rec) {
@@ -362,15 +532,12 @@
             caloriesInput.value = rec.calories;
             sleepInput.value = rec.sleep;
             heartRateInput.value = rec.heartRate;
+            closeModal();
         }
     }
-
     function renderTable() {
         if(!tableBody) return;
-        if(healthRecords.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="6">Нет данных. Добавьте первую запись!</td></tr>';
-            return;
-        }
+        if(healthRecords.length === 0) { tableBody.innerHTML = '<tr><td colspan="6">Нет данных</td></tr>'; return; }
         let html = '';
         for(let rec of healthRecords) {
             html += `<tr>
@@ -387,33 +554,79 @@
         }
         tableBody.innerHTML = html;
     }
-
     function renderChart() {
         const ctx = document.getElementById('stepsChart').getContext('2d');
-        const last7Days = [];
-        for(let i = 6; i >= 0; i--) {
-            const d = new Date();
-            d.setDate(d.getDate() - i);
-            last7Days.push(d.toISOString().slice(0,10));
-        }
-        const stepsData = last7Days.map(date => healthRecords.find(r => r.date === date)?.steps || 0);
-        const labels = last7Days.map(d => d.slice(5));
+        const last7Days = []; for(let i=6;i>=0;i--) { const d=new Date(); d.setDate(d.getDate()-i); last7Days.push(d.toISOString().slice(0,10)); }
+        const stepsData = last7Days.map(date => healthRecords.find(r=>r.date===date)?.steps || 0);
+        const labels = last7Days.map(d=>d.slice(5));
         if(stepsChart) stepsChart.destroy();
-        stepsChart = new Chart(ctx, {
-            type: 'line',
-            data: { labels, datasets: [{ label: 'Шаги', data: stepsData, borderColor: '#1E6F5C', tension: 0.2, fill: true }] },
-            options: { responsive: true, maintainAspectRatio: true }
-        });
+        stepsChart = new Chart(ctx, { type:'line', data:{ labels, datasets:[{ label:'Шаги', data:stepsData, borderColor:'#1E6F5C', tension:0.2, fill:true }] }, options:{ responsive:true } });
     }
 
-    // ---------- КАМЕРА-ВЕСЫ ----------
-    async function openCamera() {
-        if(stream) {
-            stopCamera();
+    // ---------- Календарь ----------
+    function renderCalendar() {
+        const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+        let startWeekday = firstDayOfMonth.getDay();
+        let startOffset = (startWeekday === 0 ? 6 : startWeekday - 1);
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+        const monthNames = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+        monthYearDisplay.innerText = `${monthNames[currentMonth]} ${currentYear}`;
+        let gridHtml = '';
+        let dayCounter = 1;
+        const totalCells = 42;
+        for(let i = 0; i < totalCells; i++) {
+            if(i < startOffset || dayCounter > daysInMonth) {
+                gridHtml += `<div class="calendar-day empty"></div>`;
+                continue;
+            }
+            const dateStr = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(dayCounter).padStart(2,'0')}`;
+            const hasRecord = healthRecords.some(r => r.date === dateStr);
+            const dotHtml = hasRecord ? '<div class="record-dot"></div>' : '';
+            gridHtml += `<div class="calendar-day ${hasRecord ? 'has-record' : ''}" data-date="${dateStr}">${dayCounter}${dotHtml}</div>`;
+            dayCounter++;
         }
+        calendarGrid.innerHTML = gridHtml;
+        document.querySelectorAll('.calendar-day[data-date]').forEach(div => {
+            div.addEventListener('click', (e) => {
+                const date = div.getAttribute('data-date');
+                showRecordDetails(date);
+            });
+        });
+    }
+    function showRecordDetails(date) {
+        const record = healthRecords.find(r => r.date === date);
+        if(!record) {
+            alert(`Нет данных за ${date}. Создайте запись через форму.`);
+            return;
+        }
+        modalDateTitle.innerText = record.date;
+        modalStepsSpan.innerText = record.steps;
+        modalCaloriesSpan.innerText = record.calories;
+        modalSleepSpan.innerText = record.sleep;
+        modalHeartSpan.innerText = record.heartRate;
+        currentModalDate = date;
+        modal.style.display = 'flex';
+    }
+    function closeModal() {
+        modal.style.display = 'none';
+        currentModalDate = null;
+    }
+    function prevMonth() {
+        currentMonth--;
+        if(currentMonth < 0) { currentMonth = 11; currentYear--; }
+        renderCalendar();
+    }
+    function nextMonth() {
+        currentMonth++;
+        if(currentMonth > 11) { currentMonth = 0; currentYear++; }
+        renderCalendar();
+    }
+
+    // ---------- Камера-весы ----------
+    async function openCamera() {
+        if(stream) stopCamera();
         try {
-            const constraints = { video: { facingMode: "environment" } }; // задняя камера
-            stream = await navigator.mediaDevices.getUserMedia(constraints);
+            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
             video.srcObject = stream;
             video.style.display = "block";
             photoPreview.style.display = "none";
@@ -422,86 +635,52 @@
             closeCameraBtn.disabled = false;
             openCameraBtn.disabled = true;
             foodFormDiv.style.display = "none";
-        } catch(err) {
-            alert("Не удалось получить доступ к камере: " + err.message);
-        }
+        } catch(e) { alert("Ошибка камеры: "+e.message); }
     }
-
     function capturePhoto() {
         if(!video.srcObject) return;
         const context = canvas.getContext('2d');
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const dataUrl = canvas.toDataURL('image/jpeg');
-        photoPreview.src = dataUrl;
+        context.drawImage(video, 0, 0);
+        photoPreview.src = canvas.toDataURL('image/jpeg');
         photoPreview.style.display = "block";
         video.style.display = "none";
-        stopCamera(); // останавливаем поток, чтобы не тратить батарею
+        stopCamera();
         foodFormDiv.style.display = "block";
         captureBtn.disabled = true;
         closeCameraBtn.disabled = true;
         openCameraBtn.disabled = false;
-        // Очищаем поля
-        foodNameInput.value = "";
-        foodCaloriesInput.value = "";
     }
-
     function stopCamera() {
-        if(stream) {
-            stream.getTracks().forEach(track => track.stop());
-            stream = null;
-        }
+        if(stream) { stream.getTracks().forEach(t=>t.stop()); stream=null; }
         video.srcObject = null;
         video.style.display = "none";
-        captureBtn.disabled = true;
-        closeCameraBtn.disabled = true;
-        openCameraBtn.disabled = false;
     }
-
     function closeCameraUI() {
         stopCamera();
         photoPreview.style.display = "none";
         foodFormDiv.style.display = "none";
         video.style.display = "none";
     }
-
-    // Добавить калории через камеру (суммируем с существующей записью за выбранную дату)
     function addCaloriesFromPhoto() {
         const cal = parseInt(foodCaloriesInput.value);
-        if(isNaN(cal) || cal <= 0) {
-            alert("Введите корректное количество калорий (больше 0)");
-            return;
-        }
+        if(isNaN(cal) || cal <= 0) { alert("Введите калории >0"); return; }
         const targetDate = dateInput.value || new Date().toISOString().slice(0,10);
         const existingIndex = healthRecords.findIndex(r => r.date === targetDate);
-        if(existingIndex !== -1) {
-            healthRecords[existingIndex].calories += cal;
-        } else {
-            healthRecords.push({
-                date: targetDate,
-                steps: 0,
-                calories: cal,
-                sleep: 0,
-                heartRate: 0
-            });
-        }
-        healthRecords.sort((a,b) => new Date(b.date) - new Date(a.date));
+        if(existingIndex !== -1) healthRecords[existingIndex].calories += cal;
+        else healthRecords.push({ date: targetDate, steps:0, calories:cal, sleep:0, heartRate:0 });
+        healthRecords.sort((a,b)=>new Date(b.date)-new Date(a.date));
         saveData();
-        alert(`➕ Добавлено ${cal} ккал за ${targetDate}`);
-        // обновим поле калорий в форме, если дата совпадает
-        if(dateInput.value === targetDate) {
-            const updatedRecord = healthRecords.find(r => r.date === targetDate);
-            if(updatedRecord) caloriesInput.value = updatedRecord.calories;
-        }
-        // очищаем форму фото
+        if(dateInput.value === targetDate) caloriesInput.value = healthRecords.find(r=>r.date===targetDate)?.calories || 0;
         foodNameInput.value = "";
         foodCaloriesInput.value = "";
         photoPreview.style.display = "none";
         foodFormDiv.style.display = "none";
+        alert(`Добавлено ${cal} ккал за ${targetDate}`);
     }
 
-    // ---------- BLUETOOTH (без изменений, работает как раньше) ----------
+    // ---------- Bluetooth ----------
     async function connectBluetooth() {
         if (!navigator.bluetooth) { alert("Web Bluetooth не поддерживается"); return; }
         try {
@@ -531,35 +710,40 @@
             });
         } catch(e) { alert("Ошибка: "+e.message); }
     }
-
     function saveHeartRateFromBracelet() {
-        if(!isBleConnected || currentHeartRate === null) { alert("Нет пульса с браслета"); return; }
+        if(!isBleConnected || currentHeartRate===null) { alert("Нет пульса с браслета"); return; }
         const targetDate = dateInput.value || new Date().toISOString().slice(0,10);
-        const existing = healthRecords.find(r => r.date === targetDate);
-        if(existing) { existing.heartRate = currentHeartRate; }
-        else { healthRecords.push({ date: targetDate, steps: 0, calories: 0, sleep: 0, heartRate: currentHeartRate }); }
+        const existing = healthRecords.find(r=>r.date===targetDate);
+        if(existing) existing.heartRate = currentHeartRate;
+        else healthRecords.push({ date:targetDate, steps:0, calories:0, sleep:0, heartRate:currentHeartRate });
         healthRecords.sort((a,b)=>new Date(b.date)-new Date(a.date));
         saveData();
         heartRateInput.value = currentHeartRate;
-        alert(`Пульс ${currentHeartRate} сохранён за ${targetDate}`);
+        alert(`Пульс ${currentHeartRate} сохранён`);
     }
-
     function exportToCSV() {
-        if(!healthRecords.length) return alert("Нет данных");
-        let csv = ["Дата,Шаги,Калории,Сон(ч),Пульс"];
-        healthRecords.forEach(r => csv.push(`${r.date},${r.steps},${r.calories},${r.sleep},${r.heartRate}`));
-        const blob = new Blob(["\uFEFF" + csv.join("\n")], {type:"text/csv"});
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = "health.csv";
+        if(!healthRecords.length) return;
+        let csv=["Дата,Шаги,Калории,Сон(ч),Пульс"];
+        healthRecords.forEach(r=>csv.push(`${r.date},${r.steps},${r.calories},${r.sleep},${r.heartRate}`));
+        const blob=new Blob(["\uFEFF"+csv.join("\n")],{type:"text/csv"});
+        const a=document.createElement('a');
+        a.href=URL.createObjectURL(blob);
+        a.download="health.csv";
         a.click();
         URL.revokeObjectURL(a.href);
     }
-    function clearAllHistory() { if(confirm("Удалить всё?")) { healthRecords = []; saveData(); } }
-    function clearForm() { stepsInput.value=0; caloriesInput.value=0; sleepInput.value=7; heartRateInput.value=72; setDefaultDate(); }
+    function clearAllHistory() {
+        if(confirm("Удалить всё?")) { healthRecords=[]; saveData(); closeModal(); }
+    }
+    function clearForm() {
+        stepsInput.value=0; caloriesInput.value=0; sleepInput.value=7; heartRateInput.value=72;
+        if(!dateInput.value) setDefaultDate();
+    }
+    function setDefaultDate() { if (!dateInput.value) dateInput.value = new Date().toISOString().slice(0,10); }
 
     window.deleteRecord = deleteRecord;
     window.editRecord = editRecord;
+    setDefaultDate();
 
     // События
     addUpdateBtn.addEventListener('click', addOrUpdateRecord);
@@ -572,6 +756,12 @@
     captureBtn.addEventListener('click', capturePhoto);
     closeCameraBtn.addEventListener('click', closeCameraUI);
     saveFoodCaloriesBtn.addEventListener('click', addCaloriesFromPhoto);
+    prevMonthBtn.addEventListener('click', prevMonth);
+    nextMonthBtn.addEventListener('click', nextMonth);
+    modalCloseBtn.addEventListener('click', closeModal);
+    modalEditBtn.addEventListener('click', () => { if(currentModalDate) editRecord(currentModalDate); });
+    modalDeleteBtn.addEventListener('click', () => { if(currentModalDate) deleteRecord(currentModalDate); });
+    window.addEventListener('click', (e) => { if(e.target === modal) closeModal(); });
 
     loadData();
 </script>
