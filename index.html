@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>HealthTrack Pro — Камера с удобными кнопками</title>
+    <title>HealthTrack Pro — фото + автоподстановка еды</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -38,12 +38,22 @@
         .calendar-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; margin-bottom: 8px; }
         .weekday { font-weight: 600; font-size: 0.75rem; color: #4b6f86; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-        .calendar-day { background: #f9fbfd; border-radius: 40px; padding: 12px 4px; text-align: center; font-size: 0.9rem; cursor: pointer; position: relative; border: 1px solid #e2edf2; }
+        .calendar-day {
+            background: #f9fbfd;
+            border-radius: 40px;
+            padding: 12px 4px;
+            text-align: center;
+            font-size: 0.9rem;
+            cursor: pointer;
+            position: relative;
+            border: 1px solid #e2edf2;
+        }
         .calendar-day.has-record { background: #e1f7f0; border-color: #289672; font-weight: 600; }
         .record-dot { width: 8px; height: 8px; background: #1e6f5c; border-radius: 10px; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); }
+        .photo-icon { position: absolute; top: 2px; right: 4px; font-size: 12px; }
         .badge { background: #e1f0ea; border-radius: 40px; padding: 4px 12px; font-size: 0.7rem; display: inline-block; }
         
-        /* ----- ПОЛНОЭКРАННАЯ КАМЕРА (УДОБНЫЕ КНОПКИ) ----- */
+        /* КАМЕРА */
         .camera-fullscreen {
             display: none;
             position: fixed;
@@ -77,16 +87,16 @@
             margin-bottom: 30px;
         }
         .capture-circle {
-            width: 70px;
-            height: 70px;
-            background: white;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle at 30% 30%, #ffffff, #d4d4d4);
             border-radius: 50%;
-            border: 3px solid #1e6f5c;
+            border: none;
             cursor: pointer;
-            transition: 0.1s;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            transition: 0.05s linear;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.9), inset 0 -2px 2px rgba(0,0,0,0.15);
         }
-        .capture-circle:active { transform: scale(0.94); }
+        .capture-circle:active { transform: scale(0.96); box-shadow: 0 2px 5px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.6); }
         .cam-btn {
             background: rgba(0,0,0,0.55);
             backdrop-filter: blur(10px);
@@ -124,18 +134,8 @@
             color: white;
             font-size: 0.8rem;
         }
-        .chat-message {
-            background: rgba(255,255,255,0.2);
-            border-radius: 20px;
-            padding: 6px 10px;
-            margin-bottom: 6px;
-            font-size: 0.75rem;
-        }
-        .food-input-card { background: white; border-radius: 28px; padding: 16px; margin: 8px; }
-        .flex-row { display: flex; gap: 8px; align-items: center; }
-        .mt-2 { margin-top: 8px; }
-        
-        /* модальные окна */
+        .chat-message { background: rgba(255,255,255,0.2); border-radius: 20px; padding: 6px 10px; margin-bottom: 6px; font-size: 0.75rem; }
+        @media (max-width: 500px) { .capture-circle { width: 70px; height: 70px; } .cam-btn { padding: 6px 12px; font-size: 0.85rem; min-width: 60px; } }
         .modal {
             display: none;
             position: fixed;
@@ -149,23 +149,21 @@
         .modal-content {
             background: white;
             border-radius: 48px;
-            padding: 1.8rem;
-            max-width: 320px;
-            width: 80%;
+            padding: 1.5rem;
+            max-width: 340px;
+            width: 85%;
             text-align: center;
         }
+        .photo-preview-modal { max-width: 100%; max-height: 200px; border-radius: 24px; margin: 10px 0; object-fit: cover; }
         table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
         th, td { padding: 8px 4px; border-bottom: 1px solid #e2edf2; text-align: left; }
-        @media (max-width: 500px) {
-            .cam-btn { padding: 6px 12px; font-size: 0.85rem; min-width: 60px; }
-            .capture-circle { width: 60px; height: 60px; }
-        }
+        .flex-row { display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap; }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>🏃‍♂️ HealthTrack Pro <span style="font-size: 0.8rem;">камера + чат</span></h1>
-    <p style="margin-bottom: 1rem;">Календарь + Bluetooth + удобная камера</p>
+    <h1>🏃‍♂️ HealthTrack Pro <span style="font-size: 0.8rem;">+ фото + автоеда</span></h1>
+    <p style="margin-bottom: 1rem;">Календарь, Bluetooth, камера с автоподстановкой блюд</p>
 
     <!-- форма -->
     <div class="card">
@@ -190,16 +188,16 @@
         <div class="calendar-header"><button id="prevMonthBtn" class="secondary">◀</button><span id="monthYearDisplay" class="month-year"></span><button id="nextMonthBtn" class="secondary">▶</button></div>
         <div class="calendar-days"><div class="weekday">Пн</div><div class="weekday">Вт</div><div class="weekday">Ср</div><div class="weekday">Чт</div><div class="weekday">Пт</div><div class="weekday">Сб</div><div class="weekday">Вс</div></div>
         <div id="calendarGrid" class="calendar-grid"></div>
-        <p class="badge" style="margin-top:12px;">🟢 Нажмите на день → детали</p>
+        <p class="badge" style="margin-top:12px;">🟢 Зелёный — есть данные. 📷 — есть фото. Нажмите на день → детали.</p>
     </div>
 
     <!-- график и таблица -->
     <div class="card"><h2>📊 Шаги за 7 дней</h2><canvas id="stepsChart" height="150"></canvas></div>
-    <div class="card"><h2>📜 История</h2><div style="overflow-x:auto;"><table id="historyTable"><thead><tr><th>Дата</th><th>Шаги</th><th>Калории</th><th>Сон</th><th>Пульс</th><th>Действия</th></tr></thead><tbody id="tableBody"></tbody></table></div><div style="margin-top:12px;"><button id="exportCsvBtn" class="secondary">📎 CSV</button><button id="clearAllBtn" class="danger">🗑️ Всё</button></div></div>
-    <footer>📱 Камера открывается отдельно — круглый спуск по центру, рядом вспышка и файл</footer>
+    <div class="card"><h2>📜 История</h2><div style="overflow-x:auto;"><table id="historyTable"><thead><tr><th>Дата</th><th>Шаги</th><th>Калории</th><th>Сон</th><th>Пульс</th><th>Фото</th><th>Действия</th></thead><tbody id="tableBody"></tbody></table></div><div style="margin-top:12px;"><button id="exportCsvBtn" class="secondary">📎 CSV</button><button id="clearAllBtn" class="danger">🗑️ Всё</button></div></div>
+    <footer>📸 Фото сохраняются в записи, авто-предложение еды при каждом снимке.</footer>
 </div>
 
-<!-- ПОЛНОЭКРАННАЯ КАМЕРА (НОВЫЙ ДИЗАЙН) -->
+<!-- КАМЕРА -->
 <div id="fullscreenCamera" class="camera-fullscreen">
     <video id="fullVideo" autoplay playsinline></video>
     <button id="closeFullCam" class="close-cam">✖️ Закрыть</button>
@@ -209,13 +207,13 @@
         <button id="toggleTorchCam" class="cam-btn">🔦</button>
     </div>
     <div class="chat-overlay" id="cameraChat">
-        <div class="chat-message">✨ Сделайте фото или выберите из галереи</div>
+        <div class="chat-message">✨ Сделайте фото → авто-подстановка блюда и калорий</div>
     </div>
     <input type="file" id="hiddenFileInput" accept="image/jpeg,image/png" style="display:none;">
     <canvas id="hiddenCanvas" style="display:none;"></canvas>
 </div>
 
-<!-- модалка ввода калорий -->
+<!-- модалка ввода калорий с авто-заполнением -->
 <div id="calorieModal" class="modal">
     <div class="modal-content">
         <h3>🍽️ Добавить калории</h3>
@@ -225,18 +223,28 @@
             <button id="modalCalorieCancel" class="secondary">Отмена</button>
             <button id="modalCalorieSave" style="background:#1e6f5c;">✅ Добавить</button>
         </div>
-        <p class="badge" style="margin-top: 8px;">💡 яблоко 50, пицца 300</p>
+        <p class="badge" style="margin-top: 8px;">🍎 Авто-подстановка случайного блюда и калорий (можно изменить)</p>
     </div>
 </div>
 
-<!-- модалка деталей дня -->
+<!-- модалка деталей дня (с фото) -->
 <div id="detailModal" class="modal">
-    <div class="modal-content"><h3 id="modalDateTitle"></h3><div><p>👣 Шаги: <span id="modalSteps"></span></p><p>🔥 Калории: <span id="modalCalories"></span></p><p>😴 Сон: <span id="modalSleep"></span></p><p>❤️ Пульс: <span id="modalHeart"></span></p></div><div class="flex-row"><button id="modalEditBtn" class="secondary">✏️ Ред.</button><button id="modalDeleteBtn" class="danger">🗑️ Удалить</button><button id="modalCloseBtn">Закрыть</button></div></div>
+    <div class="modal-content">
+        <h3 id="modalDateTitle"></h3>
+        <div><p>👣 Шаги: <span id="modalSteps"></span></p><p>🔥 Калории: <span id="modalCalories"></span></p><p>😴 Сон: <span id="modalSleep"></span></p><p>❤️ Пульс: <span id="modalHeart"></span></p></div>
+        <div id="modalPhotoBlock" style="margin: 12px 0;"></div>
+        <div class="flex-row">
+            <button id="modalEditBtn" class="secondary">✏️ Ред.</button>
+            <button id="modalDeletePhotoBtn" class="danger" style="background:#bc5a4c;">🗑️ Удалить фото</button>
+            <button id="modalDeleteRecordBtn" class="danger">🗑️ Удалить запись</button>
+            <button id="modalCloseBtn">Закрыть</button>
+        </div>
+    </div>
 </div>
 
 <script>
     // ---------- Глобальные ----------
-    let healthRecords = [];
+    let healthRecords = [];  // каждый объект: { date, steps, calories, sleep, heartRate, photoData? }
     let stepsChart = null;
     let currentYear = new Date().getFullYear(), currentMonth = new Date().getMonth();
     let stream = null, currentTrack = null;
@@ -281,62 +289,169 @@
     const modalCaloriesSpan = document.getElementById('modalCalories');
     const modalSleepSpan = document.getElementById('modalSleep');
     const modalHeartSpan = document.getElementById('modalHeart');
+    const modalPhotoBlock = document.getElementById('modalPhotoBlock');
     const modalEditBtn = document.getElementById('modalEditBtn');
-    const modalDeleteBtn = document.getElementById('modalDeleteBtn');
+    const modalDeletePhotoBtn = document.getElementById('modalDeletePhotoBtn');
+    const modalDeleteRecordBtn = document.getElementById('modalDeleteRecordBtn');
     const modalCloseBtn = document.getElementById('modalCloseBtn');
     let currentModalDate = null;
     let currentImageData = null;
+    
+    // список популярных блюд для автоподстановки
+    const foodOptions = [
+        { name: "Яблоко", calories: 52 }, { name: "Банан", calories: 105 }, { name: "Пицца (кусок)", calories: 285 },
+        { name: "Салат Цезарь", calories: 180 }, { name: "Гречка с курицей", calories: 350 }, { name: "Овсянка", calories: 150 },
+        { name: "Кофе с молоком", calories: 60 }, { name: "Бургер", calories: 520 }, { name: "Суп овощной", calories: 120 },
+        { name: "Творог 5%", calories: 145 }, { name: "Шоколад (плитка)", calories: 550 }, { name: "Сок апельсиновый", calories: 110 }
+    ];
+    function getRandomFood() {
+        const idx = Math.floor(Math.random() * foodOptions.length);
+        return { name: foodOptions[idx].name, calories: foodOptions[idx].calories };
+    }
     
     // ---------- Данные ----------
     function loadData() {
         const stored = localStorage.getItem('health_tracker_data');
         if(stored) healthRecords = JSON.parse(stored);
-        else { const today = new Date().toISOString().slice(0,10); healthRecords = [{ date: today, steps: 8450, calories: 320, sleep: 7.2, heartRate: 68 }, { date: getDateOffset(-1), steps: 10200, calories: 410, sleep: 6.8, heartRate: 72 }]; saveData(); }
+        else {
+            const today = new Date().toISOString().slice(0,10);
+            healthRecords = [{ date: today, steps: 8450, calories: 320, sleep: 7.2, heartRate: 68 }];
+            saveData();
+        }
         healthRecords.sort((a,b)=>new Date(b.date)-new Date(a.date));
         renderTable(); renderChart(); renderCalendar();
     }
-    function getDateOffset(days) { const d=new Date(); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); }
     function saveData() { localStorage.setItem('health_tracker_data', JSON.stringify(healthRecords)); renderTable(); renderChart(); renderCalendar(); }
-    function addOrUpdateRecord(date, steps, calories, sleep, heartRate) {
-        const idx = healthRecords.findIndex(r=>r.date===date);
-        if(idx!==-1) healthRecords[idx] = { date, steps, calories, sleep, heartRate };
-        else healthRecords.push({ date, steps, calories, sleep, heartRate });
+    function addOrUpdateRecord(date, steps, calories, sleep, heartRate, photoData = null) {
+        let idx = healthRecords.findIndex(r=>r.date===date);
+        let existingPhoto = (idx !== -1 && healthRecords[idx].photoData) ? healthRecords[idx].photoData : null;
+        let newPhoto = (photoData !== null) ? photoData : existingPhoto;
+        if(idx !== -1) healthRecords[idx] = { date, steps, calories, sleep, heartRate, photoData: newPhoto };
+        else healthRecords.push({ date, steps, calories, sleep, heartRate, photoData: newPhoto });
         healthRecords.sort((a,b)=>new Date(b.date)-new Date(a.date));
         saveData();
     }
     function deleteRecord(date) { if(confirm(`Удалить ${date}?`)) { healthRecords = healthRecords.filter(r=>r.date!==date); saveData(); if(currentModalDate===date) closeDetailModal(); } }
+    function deletePhoto(date) {
+        const rec = healthRecords.find(r=>r.date===date);
+        if(rec && rec.photoData) { delete rec.photoData; saveData(); if(currentModalDate===date) showRecordDetails(date); }
+    }
     function editRecord(date) { const rec=healthRecords.find(r=>r.date===date); if(rec){ dateInput.value=rec.date; stepsInput.value=rec.steps; caloriesInput.value=rec.calories; sleepInput.value=rec.sleep; heartRateInput.value=rec.heartRate; closeDetailModal(); } }
-    function renderTable() { if(!tableBody) return; if(healthRecords.length===0){ tableBody.innerHTML='<tr><td colspan="5">Нет данных</td></tr>'; return;} let html=''; for(let rec of healthRecords){ html+=`<tr><td>${rec.date}</td><td>${rec.steps}</td><td>${rec.calories}</td><td>${rec.sleep}</td><td>${rec.heartRate}</td><td><button class="secondary" onclick='editRecord("${rec.date}")'>✏️</button> <button class="danger" onclick='deleteRecord("${rec.date}")'>🗑️</button></td></tr>`; } tableBody.innerHTML=html; }
-    function renderChart() { const ctx=document.getElementById('stepsChart').getContext('2d'); const last7Days=[]; for(let i=6;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); last7Days.push(d.toISOString().slice(0,10)); } const stepsData=last7Days.map(d=>healthRecords.find(r=>r.date===d)?.steps||0); if(stepsChart) stepsChart.destroy(); stepsChart=new Chart(ctx,{type:'line',data:{labels:last7Days.map(d=>d.slice(5)), datasets:[{label:'Шаги',data:stepsData,borderColor:'#1E6F5C',tension:0.2}]}}); }
-    function renderCalendar() { const firstDay=new Date(currentYear,currentMonth,1); let startOffset=(firstDay.getDay()===0?6:firstDay.getDay()-1); const daysInMonth=new Date(currentYear,currentMonth+1,0).getDate(); const monthNames=['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек']; monthYearDisplay.innerText=`${monthNames[currentMonth]} ${currentYear}`; let grid=''; let day=1; for(let i=0;i<42;i++){ if(i<startOffset||day>daysInMonth){ grid+=`<div class="calendar-day empty"></div>`; } else { const dateStr=`${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`; const has=healthRecords.some(r=>r.date===dateStr); grid+=`<div class="calendar-day ${has?'has-record':''}" data-date="${dateStr}">${day}${has?'<div class="record-dot"></div>':''}</div>`; day++; } } calendarGrid.innerHTML=grid; document.querySelectorAll('.calendar-day[data-date]').forEach(div=>{ div.addEventListener('click',()=>showRecordDetails(div.dataset.date)); }); }
-    function showRecordDetails(date){ const rec=healthRecords.find(r=>r.date===date); if(!rec){ alert(`Нет данных за ${date}`); return; } modalDateTitle.innerText=rec.date; modalStepsSpan.innerText=rec.steps; modalCaloriesSpan.innerText=rec.calories; modalSleepSpan.innerText=rec.sleep; modalHeartSpan.innerText=rec.heartRate; currentModalDate=date; detailModal.style.display='flex'; }
+    function renderTable() {
+        if(!tableBody) return;
+        if(healthRecords.length===0){ tableBody.innerHTML='<tr><td colspan="7">Нет данных</td></tr>'; return;}
+        let html='';
+        for(let rec of healthRecords){
+            let hasPhoto = rec.photoData ? '📷' : '—';
+            html+=`<tr><td>${rec.date}</td><td>${rec.steps}</td><td>${rec.calories}</td><td>${rec.sleep}</td><td>${rec.heartRate}</td><td>${hasPhoto}</td>
+            <td><button class="secondary" onclick='editRecord("${rec.date}")'>✏️</button> <button class="danger" onclick='deleteRecord("${rec.date}")'>🗑️</button></td></tr>`;
+        }
+        tableBody.innerHTML=html;
+    }
+    function renderChart() {
+        const ctx=document.getElementById('stepsChart').getContext('2d');
+        const last7Days=[]; for(let i=6;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); last7Days.push(d.toISOString().slice(0,10)); }
+        const stepsData=last7Days.map(d=>healthRecords.find(r=>r.date===d)?.steps||0);
+        if(stepsChart) stepsChart.destroy();
+        stepsChart=new Chart(ctx,{type:'line',data:{labels:last7Days.map(d=>d.slice(5)), datasets:[{label:'Шаги',data:stepsData,borderColor:'#1E6F5C',tension:0.2}]}});
+    }
+    function renderCalendar() {
+        const firstDay=new Date(currentYear,currentMonth,1);
+        let startOffset=(firstDay.getDay()===0?6:firstDay.getDay()-1);
+        const daysInMonth=new Date(currentYear,currentMonth+1,0).getDate();
+        const monthNames=['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+        monthYearDisplay.innerText=`${monthNames[currentMonth]} ${currentYear}`;
+        let grid=''; let day=1;
+        for(let i=0;i<42;i++){
+            if(i<startOffset||day>daysInMonth){ grid+=`<div class="calendar-day empty"></div>`; }
+            else {
+                const dateStr=`${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+                const rec=healthRecords.find(r=>r.date===dateStr);
+                const hasRecord=!!rec;
+                const hasPhoto=rec && rec.photoData;
+                let photoIcon = hasPhoto ? '<span class="photo-icon">📷</span>' : '';
+                grid+=`<div class="calendar-day ${hasRecord?'has-record':''}" data-date="${dateStr}">${day}${photoIcon}${hasRecord?'<div class="record-dot"></div>':''}</div>`;
+                day++;
+            }
+        }
+        calendarGrid.innerHTML=grid;
+        document.querySelectorAll('.calendar-day[data-date]').forEach(div=>{ div.addEventListener('click',()=>showRecordDetails(div.dataset.date)); });
+    }
+    function showRecordDetails(date){
+        const rec=healthRecords.find(r=>r.date===date);
+        if(!rec){ alert(`Нет данных за ${date}`); return; }
+        modalDateTitle.innerText=rec.date;
+        modalStepsSpan.innerText=rec.steps;
+        modalCaloriesSpan.innerText=rec.calories;
+        modalSleepSpan.innerText=rec.sleep;
+        modalHeartSpan.innerText=rec.heartRate;
+        if(rec.photoData){
+            modalPhotoBlock.innerHTML=`<img src="${rec.photoData}" class="photo-preview-modal" alt="Фото еды">`;
+        } else { modalPhotoBlock.innerHTML='<p class="badge">Нет фото</p>'; }
+        currentModalDate=date;
+        detailModal.style.display='flex';
+    }
     function closeDetailModal(){ detailModal.style.display='none'; currentModalDate=null; }
     
     // Чат камеры
     function addChatMessage(text, isError=false){ const msg=document.createElement('div'); msg.className='chat-message'; msg.style.background=isError?'rgba(220,53,69,0.6)':'rgba(255,255,255,0.2)'; msg.innerText=text; cameraChat.appendChild(msg); cameraChat.scrollTop=cameraChat.scrollHeight; }
-    function addCaloriesFromCamera(foodName, calories, imageData=null) {
+    
+    // Сжатие фото (максимум 800px)
+    function compressPhoto(dataURL, maxWidth=800, quality=0.7){
+        return new Promise((resolve)=>{
+            const img=new Image(); img.onload=()=>{
+                const canvas=document.createElement('canvas');
+                let width=img.width, height=img.height;
+                if(width>maxWidth){ height*=maxWidth/width; width=maxWidth; }
+                canvas.width=width; canvas.height=height;
+                canvas.getContext('2d').drawImage(img,0,0,width,height);
+                resolve(canvas.toDataURL('image/jpeg', quality));
+            }; img.src=dataURL;
+        });
+    }
+    
+    async function addCaloriesFromCamera(foodName, calories, imageData) {
         if(isNaN(calories) || calories<=0){ addChatMessage("❌ Ошибка: введите число >0", true); return false; }
         const targetDate = dateInput.value || new Date().toISOString().slice(0,10);
-        const idx = healthRecords.findIndex(r=>r.date===targetDate);
-        if(idx!==-1) healthRecords[idx].calories += calories;
-        else healthRecords.push({ date:targetDate, steps:0, calories:calories, sleep:0, heartRate:0 });
+        let photoData = imageData ? await compressPhoto(imageData) : null;
+        let idx = healthRecords.findIndex(r=>r.date===targetDate);
+        if(idx !== -1){
+            healthRecords[idx].calories += calories;
+            if(photoData) healthRecords[idx].photoData = photoData;
+        } else {
+            healthRecords.push({ date:targetDate, steps:0, calories:calories, sleep:0, heartRate:0, photoData:photoData });
+        }
         healthRecords.sort((a,b)=>new Date(b.date)-new Date(a.date));
         saveData();
-        addChatMessage(`🍽️ ${foodName||'Блюдо'} → +${calories} ккал за ${targetDate}`);
+        addChatMessage(`🍽️ ${foodName||'Блюдо'} → +${calories} ккал за ${targetDate} ${photoData?'📷':''}`);
         if(dateInput.value === targetDate) caloriesInput.value = healthRecords.find(r=>r.date===targetDate)?.calories || 0;
         return true;
     }
-    function showCalorieInputModal(imageData) { currentImageData=imageData; foodNameModal.value=''; foodCaloriesModal.value=''; calorieModal.style.display='flex'; }
+    
+    function showCalorieInputModal(imageData) {
+        currentImageData = imageData;
+        const randomFood = getRandomFood();
+        foodNameModal.value = randomFood.name;
+        foodCaloriesModal.value = randomFood.calories;
+        calorieModal.style.display = 'flex';
+    }
     function closeCalorieModal() { calorieModal.style.display='none'; currentImageData=null; }
-    modalCalorieSave.onclick = () => { const name=foodNameModal.value.trim()||"Еда"; const cal=parseInt(foodCaloriesModal.value); if(!isNaN(cal) && cal>0){ addCaloriesFromCamera(name, cal, currentImageData); closeCalorieModal(); } else { alert("Введите корректные калории"); } };
+    modalCalorieSave.onclick = async () => {
+        const name = foodNameModal.value.trim() || "Еда";
+        const cal = parseInt(foodCaloriesModal.value);
+        if(!isNaN(cal) && cal>0){
+            await addCaloriesFromCamera(name, cal, currentImageData);
+            closeCalorieModal();
+        } else { alert("Введите корректные калории"); }
+    };
     modalCalorieCancel.onclick = closeCalorieModal;
     
     // Камера
     async function startFullscreenCamera() { if(stream) stopCameraTracks(); try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }); fullVideo.srcObject = stream; await fullVideo.play(); currentTrack = stream.getVideoTracks()[0]; const caps = currentTrack.getCapabilities(); if(caps.torch) toggleTorchBtn.disabled=false; else toggleTorchBtn.disabled=true; fullscreenCam.style.display = 'flex'; } catch(e) { alert("Ошибка камеры: "+e.message); } }
     function stopCameraTracks() { if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; } fullVideo.srcObject=null; currentTrack=null; }
     function closeFullscreen() { stopCameraTracks(); fullscreenCam.style.display = 'none'; }
-    function capturePhotoFromVideo() { if(!fullVideo.videoWidth) return; const canvas=hiddenCanvas; canvas.width=fullVideo.videoWidth; canvas.height=fullVideo.videoHeight; canvas.getContext('2d').drawImage(fullVideo,0,0); showCalorieInputModal(canvas.toDataURL('image/jpeg')); addChatMessage("📸 Фото сделано! Введите калории."); }
-    function onFileSelected(event) { const file=event.target.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=(e)=>{ showCalorieInputModal(e.target.result); addChatMessage("📁 Файл загружен! Введите калории."); }; reader.readAsDataURL(file); hiddenFileInput.value=''; }
+    function capturePhotoFromVideo() { if(!fullVideo.videoWidth) return; const canvas=hiddenCanvas; canvas.width=fullVideo.videoWidth; canvas.height=fullVideo.videoHeight; canvas.getContext('2d').drawImage(fullVideo,0,0); const dataUrl=canvas.toDataURL('image/jpeg'); showCalorieInputModal(dataUrl); addChatMessage("📸 Фото сделано! Авто-заполнение блюда."); }
+    function onFileSelected(event) { const file=event.target.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=(e)=>{ showCalorieInputModal(e.target.result); addChatMessage("📁 Файл загружен! Авто-заполнение блюда."); }; reader.readAsDataURL(file); hiddenFileInput.value=''; }
     async function toggleTorchCamera() { if(!currentTrack) return; try { const newState=!currentTrack.getSettings().torch; await currentTrack.applyConstraints({ advanced: [{ torch: newState }] }); } catch(e){ addChatMessage("Вспышка не поддерживается", true); } }
     
     // события
@@ -351,12 +466,13 @@
     setDefaultDate();
     addUpdateBtn.onclick = () => { const d=dateInput.value; if(!d) return; addOrUpdateRecord(d, parseInt(stepsInput.value)||0, parseInt(caloriesInput.value)||0, parseFloat(sleepInput.value)||0, parseInt(heartRateInput.value)||0); stepsInput.value=0; caloriesInput.value=0; sleepInput.value=7; heartRateInput.value=72; };
     clearFormBtn.onclick = () => { stepsInput.value=0; caloriesInput.value=0; sleepInput.value=7; heartRateInput.value=72; setDefaultDate(); };
-    exportCsvBtn.onclick = () => { if(!healthRecords.length) return; let csv=["Дата,Шаги,Калории,Сон,Пульс"]; healthRecords.forEach(r=>csv.push(`${r.date},${r.steps},${r.calories},${r.sleep},${r.heartRate}`)); const blob=new Blob(["\uFEFF"+csv.join("\n")],{type:"text/csv"}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download="health.csv"; a.click(); URL.revokeObjectURL(a.href); };
+    exportCsvBtn.onclick = () => { if(!healthRecords.length) return; let csv=["Дата,Шаги,Калории,Сон,Пульс,Фото"]; healthRecords.forEach(r=>csv.push(`${r.date},${r.steps},${r.calories},${r.sleep},${r.heartRate},${r.photoData?'есть':''}`)); const blob=new Blob(["\uFEFF"+csv.join("\n")],{type:"text/csv"}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download="health.csv"; a.click(); URL.revokeObjectURL(a.href); };
     clearAllBtn.onclick = () => { if(confirm("Удалить всё?")){ healthRecords=[]; saveData(); } };
     prevMonthBtn.onclick = () => { currentMonth--; if(currentMonth<0){ currentMonth=11; currentYear--; } renderCalendar(); };
     nextMonthBtn.onclick = () => { currentMonth++; if(currentMonth>11){ currentMonth=0; currentYear++; } renderCalendar(); };
     modalEditBtn.onclick = () => { if(currentModalDate) editRecord(currentModalDate); };
-    modalDeleteBtn.onclick = () => { if(currentModalDate) deleteRecord(currentModalDate); };
+    modalDeletePhotoBtn.onclick = () => { if(currentModalDate) { deletePhoto(currentModalDate); showRecordDetails(currentModalDate); } };
+    modalDeleteRecordBtn.onclick = () => { if(currentModalDate) deleteRecord(currentModalDate); };
     modalCloseBtn.onclick = closeDetailModal;
     window.onclick = (e) => { if(e.target===detailModal) closeDetailModal(); if(e.target===calorieModal) closeCalorieModal(); };
     window.editRecord = editRecord;
